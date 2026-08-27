@@ -1,72 +1,268 @@
-# Pimcore Project Skeleton 
+# Healthcare Provider Master Data Management
 
-This skeleton should be used by experienced Pimcore developers for starting a new project from the ground up. 
-If you are new to Pimcore, it's better to start with our demo package, listed below 😉
+This project builds a small provider Master Data Management (MDM) workflow using public healthcare provider data from NPPES.
 
-## Getting started
-```bash
-COMPOSER_MEMORY_LIMIT=-1 composer create-project pimcore/skeleton --no-scripts my-project
-cd ./my-project
-./vendor/bin/pimcore-install --install-profile='App\Installer\SkeletonProfile'
+The main problem is that the same provider can exist in multiple hospital systems with slightly different information. One system may use a full legal name, another may use an abbreviation, and another may have a different specialty or address format.
+
+The goal is to identify records that belong to the same provider and combine them into one trusted master record.
+
+## Problem
+
+A provider could appear across systems like this:
+
+```text
+EHR
+Samantha Lee
+NPI 1234567890
+Cardiology
+
+HR
+Samantha J Lee
+Employee ID 84721
+Heart Center
+
+Credentialing
+Sam Lee, MD
+NPI 1234567890
+Cardiovascular Medicine
 ```
 
-- Point your virtual host to `my-project/public`
-- [Only for Apache] Create `my-project/public/.htaccess` according to https://pimcore.com/docs/platform/Pimcore/Installation_and_Upgrade/System_Setup_and_Hosting/Apache_Configuration/ 
-- Open https://your-host/pimcore-studio in your browser
-- Done! 😎
+These records describe the same person, but they are not identical.
 
-## Docker
+This project works through how to:
 
-You can also use Docker to set up a new Pimcore Installation.
-You don't need to have a PHP environment with composer installed.
+* clean and standardize provider data
+* identify duplicate provider records
+* group records that belong to the same person
+* resolve conflicting values
+* create one golden provider record
+* validate whether the matching process worked correctly
 
-### Prerequisites
+## Data
 
-* Your user must be allowed to run docker commands (directly or via sudo).
-* You must have docker compose installed.
-* Your user must be allowed to change file permissions (directly or via sudo).
+The source data comes from the **National Plan and Provider Enumeration System (NPPES)** maintained by CMS.
 
-### Follow these steps
-1. Initialize the skeleton project using the `pimcore/pimcore` image
-``docker run -u `id -u`:`id -g` --rm -v `pwd`:/var/www/html pimcore/pimcore:php8.4-latest composer create-project pimcore/skeleton --no-scripts my-project``
+NPPES contains public information about healthcare providers and organizations, including:
 
-2. Go to your new project
-`cd my-project/`
+* NPI
+* provider name
+* credentials
+* addresses
+* taxonomy codes
+* provider identifiers
 
-3. Part of the new project is a docker compose file that already defines every required service
-   (PHP, Nginx, MariaDB, Redis, RabbitMQ, OpenSearch, Mercure, and a Supervisord service that runs
-   the messenger workers). You do not need to add any services yourself.
-    * Run `sed -i "s|user: '1000:1000'|user: '$(id -u):$(id -g)'|g" docker-compose.yaml` to set the correct user id and group id.
-    * Start the services with `docker compose up -d`
+The full dataset is large, so this project uses a smaller subset of providers.
 
-4. Install pimcore and initialize the DB
-    `docker compose exec php vendor/bin/pimcore-install --install-profile='App\Installer\SkeletonProfile'`
-    * The committed `.env` already provides the database, OpenSearch, RabbitMQ, Mercure, and admin
-      values, so the installer does not re-prompt for them. It only asks for the **product key**
-      (product registration is mandatory — see <https://license.pimcore.com/register>).
-    * The default admin login is `admin` / `admin` (from `.env`). Change the password after first login.
-    * The installer also builds the search index automatically (a GenericDataIndex post-install command).
-    * This can take a while.
+Raw NPPES files are stored locally under:
 
-5. Run codeception tests:
-   * `docker compose run --user=root --rm test-php chown -R $(id -u):$(id -g) var/ public/var/`
-   * `docker compose run --rm test-php vendor/bin/pimcore-install -n`
-   * `docker compose run --rm test-php vendor/bin/codecept run -vv`
+```text
+data/raw/nppes/
+```
 
-6. :heavy_check_mark: DONE - You can now visit your pimcore instance:
-    * The frontend: <http://localhost>
-    * Pimcore Studio, using the credentials from `.env` (default `admin` / `admin`):
-      <http://localhost/pimcore-studio>
+Raw data is not committed to GitHub.
 
-## Pimcore Platform Version
-By default, Pimcore Platform Version is added as a dependency which ensures installation of compatible and in combination 
-with each other tested versions of additional Pimcore modules. More information about the Platform Version can be found in the 
-[Platform Version docs](https://github.com/pimcore/platform-version). 
+## Project Workflow
 
-It might be necessary to update a specific Pimcore module to a version that is not included in the Platform Version.
-In that case, you need to remove the `platform-version` dependency from your `composer.json` and update the module to
-the desired version.
-Be aware that this might lead to a theoretically compatible but untested combination of Pimcore modules.
+```text
+NPPES Data
+    ↓
+Create Provider Subset
+    ↓
+Simulate 3 Hospital Systems
+    ↓
+Profile + Clean Data
+    ↓
+SQL Staging
+    ↓
+Pimcore MDM
+    ↓
+Provider Matching
+    ↓
+Duplicate Review
+    ↓
+Survivorship Rules
+    ↓
+Golden Records
+    ↓
+Provider Master
+    ↓
+Validation
+```
 
-## Other demo/skeleton packages
-- [Pimcore Basic Demo](https://github.com/pimcore/demo)
+## Main Steps
+
+### 1. Create an NPPES subset
+
+Select a manageable number of individual providers and keep only the fields needed for the project.
+
+The original downloaded data remains unchanged.
+
+### 2. Simulate hospital source systems
+
+The NPPES subset will be used to create three simulated systems:
+
+* EHR
+* HR
+* Credentialing
+
+The datasets will intentionally contain differences such as:
+
+* name variations
+* missing values
+* address formatting differences
+* specialty variations
+* source-specific IDs
+* duplicate records
+
+### 3. Create ground truth
+
+Because the simulated records come from known providers, the original provider relationship can be saved separately.
+
+This ground truth will later be used to check whether the matching process identified the correct records.
+
+### 4. Profile and standardize the data
+
+Python and pandas will be used to review:
+
+* missing values
+* duplicates
+* formatting
+* unexpected values
+* field completeness
+
+The data will then be standardized before matching.
+
+### 5. Load SQL staging tables
+
+Each source system will be loaded into its own SQL staging table.
+
+For example:
+
+```text
+stg_ehr_provider
+stg_hr_provider
+stg_credentialing_provider
+```
+
+SQL will also be used for validation and reconciliation.
+
+### 6. Build the provider model in Pimcore
+
+Pimcore Community Edition is being used as the MDM platform.
+
+The provider model will include fields such as:
+
+* NPI
+* name
+* credentials
+* specialty
+* taxonomy
+* address
+* source system
+* source record ID
+
+### 7. Apply data quality rules
+
+Rules will be added for important fields such as:
+
+* valid 10-digit NPI
+* valid state values
+* required provider names
+* valid ZIP format
+* valid taxonomy values
+
+### 8. Match provider records
+
+Records will be compared using fields such as:
+
+* NPI
+* name
+* address
+* ZIP code
+* specialty
+* taxonomy
+
+Strong matches can be automatically grouped, while uncertain matches can be reviewed manually.
+
+### 9. Apply survivorship rules
+
+When multiple records belong to the same provider, rules will determine which values should be kept.
+
+For example:
+
+* prefer a valid NPI
+* prefer the most complete provider name
+* prefer credentialing data for credentials
+* prefer standardized specialty values
+
+### 10. Create the provider master
+
+The final result will be one golden record per provider.
+
+```text
+Source Records
+      ↓
+Matching
+      ↓
+Duplicate Groups
+      ↓
+Survivorship
+      ↓
+Golden Record
+      ↓
+Provider Master
+```
+
+### 11. Validate the results
+
+The final provider matches will be compared against the ground truth.
+
+Validation will look at:
+
+* correct matches
+* missed matches
+* incorrect merges
+* unmatched records
+* duplicate reduction
+* golden record completeness
+
+## Technology
+
+* Python
+* pandas
+* SQL
+* Pimcore Community Edition
+* Docker
+* Jupyter Notebook
+* Git / GitHub
+
+## Repository Structure
+
+```text
+provider-mdm-pimcore/
+│
+├── data/
+│   ├── raw/
+│   │   └── nppes/
+│   ├── subset/
+│   └── ground_truth/
+│
+├── notebooks/
+├── src/
+├── config/
+├── tests/
+├── docker-compose.yaml
+└── README.md
+```
+
+## Current Status
+
+Pimcore Community Edition is installed and running locally.
+
+The raw NPPES data has been downloaded and placed in:
+
+```text
+data/raw/nppes/
+```
+
+The next step is creating the provider subset and simulated hospital source datasets.
