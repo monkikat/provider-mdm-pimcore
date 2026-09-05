@@ -1,41 +1,35 @@
-dataset,column,issue,example,planned_action,status
-CREDENTIALING,credential,Multiple credentials stored with inconsistent separators,M.S. CCC-SLP,Preserve raw value and parse recognized credentials into a standardized representation,Open
-Credentialing,address_line_1,Inconsistent street suffix abbreviations,"26006 OAKRIDGE DR., 4502 MEDICAL DR",Standardize street suffix abbreviations and remove unnecessary punctuation,Open
-Credentialing,address_line_2,Inconsistent suite formatting,"SUITE 100, STE # 208, SUITE # 9, SUITE C-106, STE. 300","Standardize suite/unit labels, punctuation, and spacing",Open
-Credentialing,city,Trailing punctuation in city values,"AUSTIN,",Remove trailing punctuation and trim whitespace,Open
-Credentialing,credential,Inconsistent credential abbreviations,"MD, M.D.",Standardize equivalent credential abbreviations to a canonical format,Open
-Credentialing,legal_first_name,Inconsistent spacing in hyphenated names,CHIH- HAO,Normalize whitespace around hyphens while preserving hyphenated name,Open
-Credentialing,legal_middle_name,Mixed middle initials and full middle names,"J, MARIE",Preserve original value and standardize middle name representation for matching,Open
-Credentialing,license_number,Inconsistent license number formatting and length,"1-00-0350, 2000027672, 5912","Convert to string, trim whitespace, and preserve valid formatting for state-specific validation",Open
-Credentialing,npi,NPI contains missing values,2.0% missing,"Retain missing values, do not impute NPI, use other attributes for matching",Open
-Credentialing,npi,NPI inferred as numeric during import,1234567890.0,Load/convert as string and validate 10-digit format,Open
-Credentialing,phone,phone stored as float,2.816416e+09,Convert to string and validate length,Open
-Credentialing,work_city,Inconsistent city abbreviations,"FT WORTH, FT. WORTH; LACKLAND A F B, LACKLAND AFB; MOUNT PLEASANT, MT PLEASANT",Map known city variants to a consistent canonical city name,Open
-Credentialing,zip,ZIP has mixed 5-digit and 9-digit formats,"77380, 774336767",Standardize ZIP format and derive 5-digit ZIP for matching,Open
-Credentialing,zip,Zip codes are shared across multiple provider records,782344504 appears on 13 records,Retain values and use as supporting match attribute only,Open
-Credentialing,zip,Zip inferred as numeric during import,773386118,Convert to string,Open
-EHR,address_line_1,Inconsistent street suffix abbreviations,"26006 OAKRIDGE DR., 4502 MEDICAL DR",Standardize street suffix abbreviations and remove unnecessary punctuation,Open
-EHR,address_line_2,Inconsistent suite formatting,"SUITE 100, STE # 208, SUITE # 9, SUITE C-106, STE. 300","Standardize suite/unit labels, punctuation, and spacing",Open
-EHR,credential,Inconsistent credential abbreviations,"MD, M.D.",Standardize equivalent credential abbreviations to a canonical format,Open
-EHR,credential,Multiple credentials stored in a single field,"APRN, AGACNP-BC",Parse multiple credentials and standardize each credential separately,Open
-EHR,first_name,Inconsistent capitalization,"Bray, TAYLOR",Trim whitespace and standardize capitalization,Open
-EHR,last_name,Inconsistent capitalization,"Bray, TAYLOR",Trim whitespace and standardize capitalization,Open
-EHR,legal_middle_name,Mixed middle initials and full middle names,"J, MARIE",Preserve original value and standardize middle name representation for matching,Open
-EHR,middle_name,Inconsistent capitalization,"Bray, TAYLOR",Trim whitespace and standardize capitalization,Open
-EHR,npi,NPI contains missing values,7.93% missing,"Retain missing values, do not impute NPI, use other attributes for matching",Open
-EHR,npi,NPI inferred as numeric during import,1234567890.0,Load/convert as string and validate 10-digit format,Open
-EHR,phone,Phone numbers are shared across multiple provider records,(210) 617-5300 appears on 9 records,Retain values and use as supporting match attribute only,Open
-EHR,phone,Phone numbers exist in varied formats,"(210) 617-5300, 8774182978",Standardise phone formats,Open
-EHR,zip,ZIP has mixed 5-digit and 9-digit formats,"77380, 774336767",Standardize ZIP format and derive 5-digit ZIP for matching,Open
-EHR,zip,Zip codes are shared across multiple provider records,782294402 appears on 15 records,Retain values and use as supporting match attribute only,Open
-EHR,zip,Zip inferred as numeric during import,773386118,Convert to string,Open
-EHR / HR / CREDENTIALING,credential / job_credential,Inconsistent credential abbreviations,O.D. | OD,Map credential variants to canonical credential values,Open
-HR,credential,Inconsistent credential abbreviations,"MD, M.D.",Standardize equivalent credential abbreviations to a canonical format,Open
-HR,job_specialty_code,Specialty code contains missing values,21.38% missing,Retain missing values; use available specialty data from other sources during survivorship,Open
-HR,middle_initial,Middle initial contains values longer than one character,"J, MARIE",Inspect multi-character values and derive standardized middle initial where appropriate,Open
-HR,npi,NPI contains missing values,53.6% missing,"Retain missing values, do not impute NPI, use other attributes for matching",Open
-HR,npi,NPI inferred as numeric during import,1234567890.0,Load/convert as string and validate 10-digit format,Open
-HR,work_city,Inconsistent city abbreviations,"FT WORTH, FT. WORTH; LACKLAND A F B, LACKLAND AFB; MOUNT PLEASANT, MT PLEASANT",Map known city variants to a consistent canonical city name,Open
-HR,work_city,Trailing punctuation in city values,"AUSTIN,",Remove trailing punctuation and trim whitespace,Open
-HR,work_phone,Phone numbers are shared across multiple provider records,713-792-6161 appears on 9 records,Retain values and use as supporting match attribute only,Open
-HR,work_phone,Phone numbers exist in varied formats,"817-702-1244, 7137911414",Inspect and standardise phone formats,Open
+dataset,column,issue,example,planned_action,stage,status
+CREDENTIALING,credential,Credential abbreviations use inconsistent punctuation,"MD, M.D.",Standardize equivalent credential abbreviations to a consistent representation,Standardization,Open
+CREDENTIALING,"legal_first_name, legal_middle_name, legal_last_name",Name capitalization is inconsistent,"Bray, TAYLOR",Standardize name casing while retaining the raw source values,Standardization,Open
+CREDENTIALING,npi,NPI contains missing values,51 records (2.0% missing),Retain missing values; do not impute NPI; use other standardized attributes for matching,Matching,Open
+Credentialing,address_line_1,Street suffix abbreviations are inconsistent,"26006 OAKRIDGE DR., 4502 MEDICAL DR",Standardize common street suffix abbreviations and punctuation,Standardization,Open
+Credentialing,address_line_2,Suite and unit representations are inconsistent,"SUITE 100, STE # 208, SUITE # 9",Standardize suite and unit representations while retaining the raw value,Standardization,Open
+Credentialing,credential,Multiple credentials are not always separated consistently,M.S. CCC-SLP,Standardize separators while preserving all credential values,Standardization,Open
+Credentialing,legal_middle_name,Legal middle name contains both initials and full names,Single-character initials and full middle names are both present,Preserve the full raw value and derive a comparable middle initial for matching,Standardization,Open
+Credentialing,npi,NPI inferred as numeric during import,1234567890.0,Convert to string and validate 10-digit format,Cleaning,Open
+Credentialing,phone,Phone inferred as numeric during import,2.816416e+09,Convert to string and validate phone length,Cleaning,Open
+Credentialing,phone,Phone requires normalization after conversion from numeric,2.816416e+09,"Convert to string, remove numeric artifacts, and standardize to a comparable phone format",Standardization,Open
+Credentialing,zip,ZIP codes are shared across multiple provider records,782344504 appears on 13 records,Retain values and use ZIP as a supporting match attribute only,Matching,Open
+Credentialing,zip,ZIP has mixed 5-digit and 9-digit formats,"77380, 774336767",Preserve ZIP+4 when available and derive a 5-digit ZIP for comparison and matching,Standardization,Open
+Credentialing,zip,ZIP inferred as numeric during import,773386118,Convert to string before ZIP standardization,Cleaning,Open
+EHR,address_line_1,Street suffix abbreviations are inconsistent,"26006 OAKRIDGE DR., 4502 MEDICAL DR",Standardize common street suffix abbreviations and punctuation,Standardization,Open
+EHR,address_line_2,Suite and unit representations are inconsistent,"SUITE 100, STE # 208, SUITE # 9",Standardize suite and unit representations while retaining the raw value,Standardization,Open
+EHR,credential,Credential abbreviations use inconsistent punctuation,"MD, M.D.",Standardize equivalent credential abbreviations to a consistent representation,Standardization,Open
+EHR,credential,Some records contain multiple credentials,"APRN, AGACNP-BC",Standardize separators while preserving all credential values,Standardization,Open
+EHR,"first_name, middle_name, last_name",Name capitalization is inconsistent,"Bray, TAYLOR",Standardize name casing while retaining the raw source values,Standardization,Open
+EHR,middle_name,Middle name contains both initials and full names,Single-character initials and full middle names are both present,Preserve the full raw value and derive a comparable middle initial for matching,Standardization,Open
+EHR,npi,NPI contains missing values,238 records (7.93% missing),Retain missing values; do not impute NPI; use other standardized attributes for matching,Matching,Open
+EHR,npi,NPI inferred as numeric during import,1234567890.0,Convert to string and validate 10-digit format,Cleaning,Open
+EHR,phone,Phone numbers are shared across multiple provider records,(210) 617-5300 appears on 9 records,Retain values and use phone as a supporting match attribute only,Matching,Open
+EHR,phone,Phone numbers exist in varied formats,"(210) 617-5300, 8774182978",Standardize phone numbers to a digits-only comparable format,Standardization,Open
+EHR,zip,ZIP codes are shared across multiple provider records,782294402 appears on 15 records,Retain values and use ZIP as a supporting match attribute only,Matching,Open
+EHR,zip,ZIP has mixed 5-digit and 9-digit formats,"77380, 774336767",Preserve ZIP+4 when available and derive a 5-digit ZIP for comparison and matching,Standardization,Open
+EHR,zip,ZIP inferred as numeric during import,773386118,Convert to string before ZIP standardization,Cleaning,Open
+HR,"first_name, middle_initial, last_name",Name capitalization is inconsistent,"Bray, TAYLOR",Standardize name casing while retaining the raw source values,Standardization,Open
+HR,job_credential,Credential abbreviations use inconsistent punctuation,"MD, M.D.",Standardize equivalent credential abbreviations to a consistent representation,Standardization,Open
+HR,job_specialty_code,Specialty code contains missing values,481 records (21.38% missing),Retain missing values and use specialty from other available sources during matching and survivorship,Data Quality,Open
+HR,job_specialty_code,Specialty is missing for some providers where another source has specialty data,166 matched providers,Retain source-level missingness and consider available specialty values during survivorship,Data Quality,Open
+HR,npi,NPI contains missing values,1206 records (53.6% missing),Retain missing values; do not impute NPI; use other standardized attributes for matching,Matching,Open
+HR,npi,NPI inferred as numeric during import,1234567890.0,Convert to string and validate 10-digit format,Cleaning,Open
+HR,work_phone,Phone numbers are shared across multiple provider records,713-792-6161 appears on 9 records,Retain values and use phone as a supporting match attribute only,Matching,Open
+HR,work_phone,Phone numbers exist in varied formats,"817-702-1244, 7137911414",Standardize phone numbers to a digits-only comparable format,Standardization,Open
